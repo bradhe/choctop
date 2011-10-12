@@ -107,9 +107,9 @@ module ChocTop
     def private_key
       unless File.exists?('dsa_priv.pem')
         puts "Creating new private and public keys for signing the DMG..."
-        `openssl dsaparam 2048 < /dev/urandom > dsaparam.pem`
-        `openssl gendsa dsaparam.pem -out dsa_priv.pem`
-        `openssl dsa -in dsa_priv.pem -pubout -out dsa_pub.pem`
+        `#{openssl} dsaparam 2048 < /dev/urandom > dsaparam.pem`
+        `#{openssl} gendsa dsaparam.pem -out dsa_priv.pem`
+        `#{openssl} dsa -in dsa_priv.pem -pubout -out dsa_pub.pem`
         `rm dsaparam.pem`
         puts <<-EOS.gsub(/^      /, '')
 
@@ -122,7 +122,11 @@ module ChocTop
     end
 
     def dsa_signature
-      @dsa_signature ||= `openssl dgst -sha1 -binary < "#{pkg}" | openssl dgst -dss1 -sign "#{private_key}" | openssl enc -base64`
+      @dsa_signature ||= `#{openssl} dgst -sha1 -binary < "#{pkg}" | #{openssl} dgst -dss1 -sign "#{private_key}" | #{openssl} enc -base64`
+    end
+
+    def openssl
+      ENV['OPENSSL'] || 'openssl'
     end
   end
 end
